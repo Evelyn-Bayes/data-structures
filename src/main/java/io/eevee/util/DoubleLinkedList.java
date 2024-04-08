@@ -48,14 +48,13 @@ public class DoubleLinkedList<E> implements List<E> {
         } else if (size == 1 && index == 0) {
             head = new Node(e, head, null);
             tail = head.next;
+        } else if (size >= 1 && index == 0) {
+            head = new Node(e, head, null);
         } else if (size == index) {
             tail.next = new Node(e, null, tail);
             tail = tail.next;
         } else {
-            Node<E> node = head;
-            for(int i = 0; i < (index - 1); i++) {
-                node = node.next;
-            }
+            Node<E> node = getNode(index - 1);
             node.next = new Node(e, node.next, node);
         }
         size++;
@@ -131,10 +130,7 @@ public class DoubleLinkedList<E> implements List<E> {
     public E get(int index) throws IndexOutOfBoundsException {
         if (index < 0 || index >= size ) throw new IndexOutOfBoundsException();
         if (index == (size - 1)) return tail.e;
-        Node<E> node = head;
-        for(int i = 0; i < index; i++) {
-            node = node.next;
-        }
+        Node<E> node = getNode(index);
         return node.e;
     }
 
@@ -164,6 +160,14 @@ public class DoubleLinkedList<E> implements List<E> {
         return tail.e;
     }
 
+    private Node<E> getNode(int index) {
+        Node<E> node = head;
+        for(int i = 0; i < index; i++) {
+            node = node.next;
+        }
+        return node;
+    }
+
     /**
      * Removes the element at the specified position in the list.
      *
@@ -177,18 +181,15 @@ public class DoubleLinkedList<E> implements List<E> {
         if (index < 0 || index >= size) throw new IndexOutOfBoundsException();
         if (size == 1) {
             clear();
-            return;
-        }
-        if (index == (size - 1)) {
+        } else if (index == (size - 1)) {
             removeLast();
-            return;
+        } else if (index == 0) {
+            removeFirst();
+        } else {
+            Node<E> node = getNode(index - 1);
+            node.next = node.next.next;
+            size--;
         }
-        Node<E> node = head;
-        for(int i = 0; i < (index - 1); i++) {
-            node = node.next;
-        }
-        node.next = node.next.next;
-        size--;
     }
 
     /**
@@ -244,10 +245,7 @@ public class DoubleLinkedList<E> implements List<E> {
     @Override
     public void set(int index, E e) throws IndexOutOfBoundsException {
         if (index < 0 || index >= size) throw new IndexOutOfBoundsException();
-        Node<E> node = head;
-        for(int i = 0; i < index; i++) {
-            node = node.next;
-        }
+        Node<E> node = getNode(index);
         node.e = e;
     }
 
