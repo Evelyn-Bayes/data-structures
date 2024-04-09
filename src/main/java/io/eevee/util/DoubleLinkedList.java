@@ -42,22 +42,15 @@ public class DoubleLinkedList<E> implements List<E> {
     @Override
     public void add(int index, E e) throws IndexOutOfBoundsException {
         if (index < 0 || index > size ) throw new IndexOutOfBoundsException();
-        if (size == 0) {
-            head = new Node(e, null, null);
-            tail = head;
-        } else if (size == 1 && index == 0) {
-            head = new Node(e, head, null);
-            tail = head.next;
-        } else if (size >= 1 && index == 0) {
-            head = new Node(e, head, null);
+        if (index == 0) {
+            addFirst(e);
         } else if (size == index) {
-            tail.next = new Node(e, null, tail);
-            tail = tail.next;
+            addLast(e);
         } else {
             Node<E> node = getNode(index - 1);
             node.next = new Node(e, node.next, node);
+            size++;
         }
-        size++;
     }
 
     /**
@@ -96,13 +89,12 @@ public class DoubleLinkedList<E> implements List<E> {
      */
     public void addLast(E e) {
         if (size == 0) {
-            head = new Node(e, null, null);
-            tail = head;
+            addFirst(e);
         } else {
             tail.next = new Node(e, null, tail);
             tail = tail.next;
+            size++;
         }
-        size++;
     }
 
     /**
@@ -129,9 +121,12 @@ public class DoubleLinkedList<E> implements List<E> {
     @Override
     public E get(int index) throws IndexOutOfBoundsException {
         if (index < 0 || index >= size ) throw new IndexOutOfBoundsException();
-        if (index == (size - 1)) return tail.e;
-        Node<E> node = getNode(index);
-        return node.e;
+        if (index == (size - 1)) {
+            return tail.e;
+        } else {
+            Node<E> node = getNode(index);
+            return node.e;
+        }
     }
 
     /**
@@ -179,12 +174,10 @@ public class DoubleLinkedList<E> implements List<E> {
     @Override
     public void remove(int index) throws IndexOutOfBoundsException {
         if (index < 0 || index >= size) throw new IndexOutOfBoundsException();
-        if (size == 1) {
-            clear();
+        if (index == 0) {
+            removeFirst();
         } else if (index == (size - 1)) {
             removeLast();
-        } else if (index == 0) {
-            removeFirst();
         } else {
             Node<E> node = getNode(index - 1);
             node.next = node.next.next;
@@ -221,14 +214,8 @@ public class DoubleLinkedList<E> implements List<E> {
         if (size == 1) {
             clear();
         } else {
-            Node<E> previous = null;
-            Node<E> node = head;
-            while(node.next != null) {
-                previous = node;
-                node = node.next;
-            }
-            previous.next = null;
-            tail = previous;
+            tail = tail.previous;
+            tail.next = null;
             size--;
         }
     }

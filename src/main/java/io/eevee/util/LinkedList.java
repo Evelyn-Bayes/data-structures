@@ -42,23 +42,17 @@ public class LinkedList<E> implements List<E> {
      */
     @Override
     public void add(int index, E e) throws IndexOutOfBoundsException {
-        if (index < 0 || index > size ) throw new IndexOutOfBoundsException();
-        if (size == 0) {
-            head = new Node(e, null);
-            tail = head;
-        } else if (size == 1 && index == 0) {
-            head = new Node(e, head);
-            tail = head.next;
-        } else if (size > 1 && index == 0) {
-            head = new Node(e, head);
-        } else if (size == index) {
-            tail.next = new Node(e, null);
-            tail = tail.next;
+        if (index < 0 || index > size) {
+            throw new IndexOutOfBoundsException();
+        } else if (index == 0) {
+            addFirst(e);
+        } else if (index == size) {
+            addLast(e);
         } else {
             Node<E> node = getNode(index - 1);
             node.next = new Node(e, node.next);
+            size++;
         }
-        size++;
     }
 
     /**
@@ -82,10 +76,10 @@ public class LinkedList<E> implements List<E> {
      */
     public void addFirst(E e) {
         head = new Node<E>(e, head);
-        if (size == 0) {
+        size++;
+        if (size == 1) {
             tail = head;
         }
-        size++;
     }
 
     /**
@@ -130,9 +124,12 @@ public class LinkedList<E> implements List<E> {
     @Override
     public E get(int index) throws IndexOutOfBoundsException {
         if (index < 0 || index >= size ) throw new IndexOutOfBoundsException();
-        if (index == (size - 1)) return tail.e;
-        Node<E> node = getNode(index);
-        return node.e;
+        if (index == (size - 1)) {
+            return tail.e;
+        } else {
+            Node<E> node = getNode(index);
+            return node.e;
+        }
     }
 
     /**
@@ -180,12 +177,10 @@ public class LinkedList<E> implements List<E> {
     @Override
     public void remove(int index) throws IndexOutOfBoundsException {
         if (index < 0 || index >= size) throw new IndexOutOfBoundsException();
-        if (size == 1) {
-            clear();
+        if (index == 0) {
+            removeFirst();
         } else if (index == (size - 1)) {
             removeLast();
-        } else if (index == 0) {
-            removeFirst();
         } else {
             Node<E> node = getNode(index - 1);
             node.next = node.next.next;
@@ -222,14 +217,8 @@ public class LinkedList<E> implements List<E> {
         if (size == 1) {
             clear();
         } else {
-            Node<E> previous = null;
-            Node<E> node = head;
-            while(node.next != null) {
-                previous = node;
-                node = node.next;
-            }
-            previous.next = null;
-            tail = previous;
+            tail = getNode(size - 2);
+            tail.next = null;
             size--;
         }
     }
