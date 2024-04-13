@@ -257,4 +257,13 @@ public class DoubleLinkedListTest {
         assertThrows(NoSuchElementException.class, () -> {multiElementList.getFirst();});
         assertThrows(NoSuchElementException.class, () -> {multiElementList.getLast();});
     }
+
+    @Test
+    public void testIterable() {
+        Integer startingValue = 0;
+        for (Integer node : multiElementList) {
+            assertEquals(startingValue, node);
+            startingValue++;
+        }
+    }
 }

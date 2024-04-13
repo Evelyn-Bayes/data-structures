@@ -257,4 +257,25 @@ public class ArrayListTest {
         assertThrows(NoSuchElementException.class, () -> {multiElementList.getFirst();});
         assertThrows(NoSuchElementException.class, () -> {multiElementList.getLast();});
     }
+
+    @Test
+    public void testIterable() {
+        Integer startingValue = 0;
+        for (Integer node : multiElementList) {
+            assertEquals(startingValue, node);
+            startingValue++;
+        }
+    }
+
+    @Test
+    public void testResize() {
+        for (int i = 3; i < 13; i++) {
+            multiElementList.addLast(i);
+        }
+        assertEquals(13, multiElementList.size());
+
+        for (int i = 0; i < 13; i++) {
+            assertEquals(i, multiElementList.get(i));
+        }
+    }
 }

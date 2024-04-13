@@ -1,5 +1,6 @@
 package io.eevee.util;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import static java.lang.Math.floorMod;
@@ -18,7 +19,7 @@ import static java.lang.Math.floorMod;
  * @see List
  * @param <E> the type of the elements stored in this collection
  */
-public class ArrayList<E> implements List<E> {
+public class ArrayList<E> implements List<E>, Iterable<E> {
     private int head;
     private int size;
     private int capacity;
@@ -52,16 +53,10 @@ public class ArrayList<E> implements List<E> {
         } else if (index == size) {
             addLast(e);
         } else {
-            Object[] tmp = new Object[capacity];
-            for (int i = 0; i < index; i++) {
-                tmp[i] = array[calculateAdjustedIndex(i)];
+            for (int i = (size - 1); i >= index; i--) {
+                array[calculateAdjustedIndex(i+1)] = array[calculateAdjustedIndex(i)];
             }
-            tmp[index] = e;
-            for (int i = index; i < size; i++) {
-                tmp[i+1] = array[calculateAdjustedIndex(i)];
-            }
-            array = tmp;
-            head = 0;
+            array[calculateAdjustedIndex(index)] = e;
             size++;
         }
     }
@@ -87,7 +82,7 @@ public class ArrayList<E> implements List<E> {
      */
     public void addFirst(E e) {
         if (size == capacity) grow();
-        head = floorMod(head - 1, capacity);
+        head = calculateAdjustedIndex(-1);
         array[head] = e;
         size++;
     }
@@ -174,6 +169,14 @@ public class ArrayList<E> implements List<E> {
     }
 
     /**
+     * Returns iterator of the LinkedList.
+     */
+    @Override
+    public Iterator<E> iterator() {
+        return new ArrayListIterator();
+    }
+
+    /**
      * Removes the element at the specified position in the list.
      *
      * <p>Complexity: O(n).
@@ -189,16 +192,10 @@ public class ArrayList<E> implements List<E> {
         } else if (index == (size - 1)) {
             removeLast();
         } else {
-            Object[] tmp = new Object[capacity];
-            for (int i = 0; i < index; i++) {
-                tmp[i] = array[calculateAdjustedIndex(i)];
-            }
-            tmp[index] = null;
             for (int i = (index + 1); i < size; i++) {
-                tmp[i-1] = array[calculateAdjustedIndex(i)];
+                array[calculateAdjustedIndex(i - 1)] = array[calculateAdjustedIndex(i)];
             }
-            array = tmp;
-            head = 0;
+            array[size - 1] = null;
             size--;
         }
     }
@@ -255,5 +252,21 @@ public class ArrayList<E> implements List<E> {
     @Override
     public int size() {
         return size;
+    }
+
+    private class ArrayListIterator<E> implements Iterator<E> {
+        private int index;
+
+        ArrayListIterator() {
+            index = 0;
+        }
+
+        public E next() {
+            return (E) array[index++];
+        }
+
+        public boolean hasNext() {
+            return index < size;
+        }
     }
 }

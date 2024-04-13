@@ -1,6 +1,8 @@
 package io.eevee.util;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
+
 
 /**
  * Double linked list implementation of the {@code List} interface.
@@ -20,7 +22,7 @@ import java.util.NoSuchElementException;
  * @see List
  * @param <E> the type of the elements stored in this collection
  */
-public class DoubleLinkedList<E> implements List<E> {
+public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
     private Node<E> head;
     private Node<E> tail;
     private int size;
@@ -164,6 +166,14 @@ public class DoubleLinkedList<E> implements List<E> {
     }
 
     /**
+     * Returns iterator of the LinkedList.
+     */
+    @Override
+    public Iterator<E> iterator() {
+        return new DoubleLinkedListIterator(head);
+    }
+
+    /**
      * Removes the element at the specified position in the list.
      *
      * <p>Complexity: O(n).
@@ -246,6 +256,28 @@ public class DoubleLinkedList<E> implements List<E> {
     @Override
     public int size() {
         return size;
+    }
+
+    private class DoubleLinkedListIterator<E> implements Iterator<E> {
+        private int index;
+        private Node<E> node;
+        private E next;
+
+        DoubleLinkedListIterator(Node<E> head) {
+            index = 0;
+            node = head;
+        }
+
+        public E next() {
+            index++;
+            next = node.e;
+            node = node.next;
+            return next;
+        }
+
+        public boolean hasNext() {
+            return index < size;
+        }
     }
 
     private class Node<E> {
