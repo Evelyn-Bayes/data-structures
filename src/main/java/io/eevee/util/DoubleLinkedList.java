@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
  * </ul>
  * 
  * <p>In the above complexity breakdown a method like {@code remove(int index)} 
- * would constitute an 'access' operation to locate the element and a 'remove'
+ * would require an 'access' operation to locate the element and a 'remove'
  * to delete it from the list.
  *
  * @see List
@@ -25,12 +25,19 @@ import java.util.NoSuchElementException;
 public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
     private Node<E> head;
     private Node<E> tail;
-    private int size;
+    int size;
 
     DoubleLinkedList() {
         head = null;
         tail = null;
         size = 0;
+    }
+    
+    // Visible and strictly available for testing
+    void assertInvarients() {
+        assert (size == 0)
+            ? (head == null && tail == null)
+            : (head.previous == null && tail.next == null);
     }
 
     /**
@@ -38,19 +45,19 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
      *
      * <p>Complexity: O(n).
      * @param index index at which the specified element is to be inserted
-     * @param e element to be inserted
+     * @param element element to be inserted
      * @throws IndexOutOfBoundsException index specified is negative or greater then the length of the list
      */
     @Override
-    public void add(int index, E e) throws IndexOutOfBoundsException {
+    public void add(int index, E element) throws IndexOutOfBoundsException {
         if (index < 0 || index > size ) throw new IndexOutOfBoundsException();
         if (index == 0) {
-            addFirst(e);
+            addFirst(element);
         } else if (size == index) {
-            addLast(e);
+            addLast(element);
         } else {
             Node<E> node = getNode(index - 1);
-            node.next = new Node(e, node.next, node);
+            node.next = new Node(element, node.next, node);
             size++;
         }
     }
@@ -60,11 +67,11 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
      *
      * <p>Complexity: O(1).
      *
-     * @param e element to be appended
+     * @param element element to be appended
      */
     @Override
-    public void add(E e) {
-        addFirst(e);
+    public void add(E element) {
+        addFirst(element);
     }
 
     /**
@@ -72,10 +79,10 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
      *
      * <p>Complexity: O(1).
      *
-     * @param e element to be appended
+     * @param element element to be appended
      */
-    public void addFirst(E e) {
-        head = new Node<E>(e, head, null);
+    public void addFirst(E element) {
+        head = new Node<E>(element, head, null);
         if (size == 0) {
             tail = head;
         }
@@ -87,13 +94,13 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
      *
      * <p>Complexity: O(1).
      *
-     * @param e element to be appended
+     * @param element element to be appended
      */
-    public void addLast(E e) {
+    public void addLast(E element) {
         if (size == 0) {
-            addFirst(e);
+            addFirst(element);
         } else {
-            tail.next = new Node(e, null, tail);
+            tail.next = new Node(element, null, tail);
             tail = tail.next;
             size++;
         }
@@ -112,6 +119,24 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
     }
 
     /**
+     * Returns true if the specified element is in the list.
+     *
+     * <p>Complexity: O(n).
+     *
+     * @param element element to search the list for
+     * @return true if the specified element is in the list
+     */
+    @Override
+    public boolean contains(E element) {
+        Node<E> node = head;
+        for (int i = 0; i < size; i++) {
+            if (node.element.equals(element)) return true;
+            node = node.next;
+        }
+        return false;
+    }
+
+    /**
      * Returns the element at the specified position in the list.
      *
      * <p>Complexity: O(n).
@@ -124,10 +149,10 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
     public E get(int index) throws IndexOutOfBoundsException {
         if (index < 0 || index >= size ) throw new IndexOutOfBoundsException();
         if (index == (size - 1)) {
-            return tail.e;
+            return tail.element;
         } else {
             Node<E> node = getNode(index);
-            return node.e;
+            return node.element;
         }
     }
 
@@ -141,7 +166,7 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
      */
     public E getFirst() throws NoSuchElementException {
         if (size == 0) throw new NoSuchElementException();
-        return head.e;
+        return head.element;
     }
 
     /**
@@ -154,7 +179,7 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
      */
     public E getLast() throws NoSuchElementException {
         if (size == 0) throw new NoSuchElementException();
-        return tail.e;
+        return tail.element;
     }
 
     private Node<E> getNode(int index) {
@@ -191,7 +216,36 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
         } else {
             Node<E> node = getNode(index - 1);
             node.next = node.next.next;
+            node.next.previous = node;
             size--;
+        }
+    }
+
+    /**
+     * Removes the first instance of the element in the list if it exists.
+     *
+     * <p>Complexity: O(n).
+     *
+     * @param element element to be removed
+     * @throws NoSuchElementException method executed on empty list
+     */
+    @Override
+    public void remove(E element) throws NoSuchElementException {
+        if (size == 0) throw new NoSuchElementException();
+        if (element.equals(head.element)) {
+            removeFirst();
+            return;
+        }
+        for (Node<E> node = head.next; node != tail; node = node.next) {
+            if (element.equals(node.element)) {
+                node.previous.next = node.next;
+                node.next.previous = node.previous;
+                size--;
+                return;
+            }
+        }
+        if (element.equals(tail.element)) {
+            removeLast();
         }
     }
 
@@ -208,6 +262,7 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
             clear();
         } else {
             head = head.next;
+            head.previous = null;
             size--;
         }
     }
@@ -236,14 +291,14 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
      * <p>Complexity: O(n).
      *
      * @param index index of the element to be overwritten
-     * @param e element to be set
+     * @param element element to be set
      * @throws IndexOutOfBoundsException index specified is negative or greater then the length of the list
      */
     @Override
-    public void set(int index, E e) throws IndexOutOfBoundsException {
+    public void set(int index, E element) throws IndexOutOfBoundsException {
         if (index < 0 || index >= size) throw new IndexOutOfBoundsException();
         Node<E> node = getNode(index);
-        node.e = e;
+        node.element = element;
     }
 
     /**
@@ -270,7 +325,7 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
 
         public E next() {
             index++;
-            next = node.e;
+            next = node.element;
             node = node.next;
             return next;
         }
@@ -281,12 +336,12 @@ public class DoubleLinkedList<E> implements List<E>, Iterable<E> {
     }
 
     private class Node<E> {
-        E e;
+        E element;
         Node<E> next;
         Node<E> previous;
 
-        Node(E e, Node<E> next, Node<E> previous) {
-            this.e = e;
+        Node(E element, Node<E> next, Node<E> previous) {
+            this.element = element;
             this.next = next;
             this.previous = previous;
         }

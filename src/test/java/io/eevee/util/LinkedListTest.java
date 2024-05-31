@@ -17,7 +17,9 @@ public class LinkedListTest {
 
     private LinkedList<Integer> emptyList;
     private LinkedList<Integer> singleElementList;
-    private LinkedList<Integer> multiElementList;;
+    private LinkedList<Integer> multiElementList;
+
+    private final int MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS = 777;
 
     @BeforeEach
     public void setup() {
@@ -132,10 +134,10 @@ public class LinkedListTest {
 
     @Test
     public void testAddMethodOnMiddleOfList() {
-        multiElementList.add(2, 3);
+        multiElementList.add(1, 3);
         assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(3, multiElementList.get(2));
+        assertEquals(3, multiElementList.get(1));
+        assertEquals(1, multiElementList.get(2));
         assertEquals(2, multiElementList.get(3));
     }
 
@@ -152,6 +154,7 @@ public class LinkedListTest {
         assertThrows(NoSuchElementException.class, () -> {emptyList.removeFirst();});
 
         singleElementList.removeFirst();
+        singleElementList.assertInvarients();
         assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
 
         multiElementList.removeFirst();
@@ -164,9 +167,11 @@ public class LinkedListTest {
         assertThrows(NoSuchElementException.class, () -> {emptyList.removeLast();});
 
         singleElementList.removeLast();
+        singleElementList.assertInvarients();
         assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
 
         multiElementList.removeLast();
+        multiElementList.assertInvarients();
         assertEquals(0, multiElementList.get(0));
         assertEquals(1, multiElementList.get(1));
     }
@@ -176,6 +181,7 @@ public class LinkedListTest {
         assertThrows(IndexOutOfBoundsException.class, () -> {emptyList.remove(0);});
 
         singleElementList.remove(0);
+        singleElementList.assertInvarients();
         assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
 
         multiElementList.remove(0);
@@ -186,6 +192,7 @@ public class LinkedListTest {
     @Test
     public void testRemoveMethodOnEndOfList() {
         multiElementList.remove(2);
+        multiElementList.assertInvarients();
         assertEquals(0, multiElementList.get(0));
         assertEquals(1, multiElementList.get(1));
     }
@@ -253,6 +260,7 @@ public class LinkedListTest {
     @Test
     public void testClearMethod() {
         multiElementList.clear();
+        multiElementList.assertInvarients();
         assertEquals(0, multiElementList.size());
         assertThrows(NoSuchElementException.class, () -> {multiElementList.getFirst();});
         assertThrows(NoSuchElementException.class, () -> {multiElementList.getLast();});
@@ -265,5 +273,69 @@ public class LinkedListTest {
             assertEquals(startingValue, node);
             startingValue++;
         }
+    }
+
+    @Test
+    public void testContains() {
+        assertEquals(false, emptyList.contains(0));
+        assertEquals(true, singleElementList.contains(0));
+        assertEquals(false, singleElementList.contains(1));
+        assertEquals(true, multiElementList.contains(0));
+        assertEquals(true, multiElementList.contains(1));
+        assertEquals(true, multiElementList.contains(2));
+        assertEquals(false, multiElementList.contains(3));
+    }
+
+    @Test
+    public void testRemoveObjectMethodOnStartOfList() {
+        assertThrows(NoSuchElementException.class, () -> {emptyList.remove(Integer.valueOf(0));});
+
+        singleElementList.remove(Integer.valueOf(0));
+        singleElementList.assertInvarients();
+        assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
+
+        multiElementList.remove(Integer.valueOf(0));
+        assertEquals(1, multiElementList.get(0));
+        assertEquals(2, multiElementList.get(1));
+    }
+
+    @Test
+    public void testRemoveObjectMethodOnEndOfList() {
+        multiElementList.remove(Integer.valueOf(2));
+        multiElementList.assertInvarients();
+        assertEquals(0, multiElementList.get(0));
+        assertEquals(1, multiElementList.get(1));
+        assertThrows(IndexOutOfBoundsException.class, () -> {multiElementList.get(2);});
+    }
+
+    @Test
+    public void testRemoveObjectMethodOnMiddleOfList() {
+        multiElementList.remove(Integer.valueOf(1));
+        assertEquals(0, multiElementList.get(0));
+        assertEquals(2, multiElementList.get(1));
+    }
+
+    @Test
+    public void testRemoveObjectMethodOnInvalidObject() {
+        multiElementList.remove(Integer.valueOf(3));
+        assertEquals(0, multiElementList.get(0));
+        assertEquals(1, multiElementList.get(1));
+        assertEquals(2, multiElementList.get(2));
+    }
+
+    @Test
+    public void testRemoveObjectMethodHandlesOrderCorrectlyForListContainingDuplicates() {
+        LinkedList<Integer> listWithDuplicates = new LinkedList<Integer>();
+        listWithDuplicates.addLast(0);
+        listWithDuplicates.addLast(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS);
+        listWithDuplicates.addLast(1);
+        listWithDuplicates.addLast(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS);
+
+        listWithDuplicates.remove(Integer.valueOf(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS));
+
+        listWithDuplicates.assertInvarients();
+        assertEquals(0, listWithDuplicates.get(0));
+        assertEquals(1, listWithDuplicates.get(1));
+        assertEquals(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS, listWithDuplicates.get(2));
     }
 }

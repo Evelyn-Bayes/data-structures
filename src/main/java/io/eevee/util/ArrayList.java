@@ -12,7 +12,7 @@ import static java.lang.Math.floorMod;
  * <ul>
  *   <li>Space - O(n)
  *   <li>Access - O(1)
- *   <li>Insert - O(n)
+ *   <li>Insert - O(1) (Amortized)
  *   <li>Remove - O(n)
  * </ul>
  *
@@ -22,7 +22,6 @@ import static java.lang.Math.floorMod;
 public class ArrayList<E> implements List<E>, Iterable<E> {
     private int head;
     private int size;
-    private int capacity;
     private Object[] array;
 
     private static final int DEFAULT_CAPACITY = 10;
@@ -30,60 +29,36 @@ public class ArrayList<E> implements List<E>, Iterable<E> {
     ArrayList() {
         head = 0;
         size = 0;
-        capacity = DEFAULT_CAPACITY;
-        array = new Object[capacity];
+        array = new Object[DEFAULT_CAPACITY];
     }
 
     /**
      * Inserts the element at the specific index.
      *
-     * <p>Complexity: O(n).
+     * <p>Complexity: O(1).
      *
      * @param index index at which the specified element is to be inserted
-     * @param e element to be inserted
+     * @param element element to be inserted
      * @throws IndexOutOfBoundsException index specified is negative or greater then the length of the list
      */
     @Override
-    public void add(int index, E e) throws IndexOutOfBoundsException { //TODO: I actually only need to shift one half of the list
-        if (size == capacity) grow();
-        if (index < 0 || index > size) {
-            throw new IndexOutOfBoundsException();
+    public void add(int index, E element) throws IndexOutOfBoundsException {
+        if (index < 0 || size < index) throw new IndexOutOfBoundsException();
+        if (size == array.length) grow();
+
+        if (size == 0) {
+            array[head] = element;
         } else if (index == 0) {
-            addFirst(e);
-        } else if (index == size) {
-            addLast(e);
-        } else {
+            head = calculateAdjustedIndex(-1);
+            array[head] = element;
+        } else if (index < size) {
             for (int i = (size - 1); i >= index; i--) {
                 array[calculateAdjustedIndex(i+1)] = array[calculateAdjustedIndex(i)];
             }
-            array[calculateAdjustedIndex(index)] = e;
-            size++;
+            array[calculateAdjustedIndex(index)] = element;
+        } else {
+            array[calculateAdjustedIndex(size)] = element;
         }
-    }
-
-    /**
-     * Inserts the element at the beginning of the list.
-     *
-     * <p>Complexity: O(1).
-     *
-     * @param e element to be appended
-     */
-    @Override
-    public void add(E e) {
-        addFirst(e);
-    }
-
-    /**
-     * Inserts the element at the beginning of the list.
-     *
-     * <p>Complexity: O(1).
-     *
-     * @param e element to be appended
-     */
-    public void addFirst(E e) {
-        if (size == capacity) grow();
-        head = calculateAdjustedIndex(-1);
-        array[head] = e;
         size++;
     }
 
@@ -92,20 +67,41 @@ public class ArrayList<E> implements List<E>, Iterable<E> {
      *
      * <p>Complexity: O(1).
      *
-     * @param e element to be appended
+     * @param element element to be appended
      */
-    public void addLast(E e) {
-        if (size == capacity) grow();
-        array[size] = e;
-        size++;
-    }
-
-    private int calculateAdjustedIndex(int index) {
-        return floorMod((head + index), capacity);
+    @Override
+    public void add(E element) {
+        add(size, element);
     }
 
     /**
-     * Empties the list..
+     * Inserts the element at the beginning of the list.
+     *
+     * <p>Complexity: O(1).
+     *
+     * @param element element to be appended
+     */
+    public void addFirst(E element) {
+        add(0, element);
+    }
+
+    /**
+     * Inserts the element at the end of the list.
+     *
+     * <p>Complexity: O(1).
+     *
+     * @param element element to be appended
+     */
+    public void addLast(E element) {
+        add(size, element);
+    }
+
+    private int calculateAdjustedIndex(int index) {
+        return floorMod((head + index), array.length);
+    }
+
+    /**
+     * Empties the list.
      *
      * <p>Complexity: O(1).
      */
@@ -113,8 +109,39 @@ public class ArrayList<E> implements List<E>, Iterable<E> {
     public void clear() {
         head = 0;
         size = 0;
-        capacity = DEFAULT_CAPACITY;
-        array = new Object[capacity];
+        array = new Object[DEFAULT_CAPACITY];
+    }
+
+    /**
+     * Returns true if the specified element is in the list.
+     *
+     * <p>Complexity: O(n).
+     *
+     * @param element element to search the list for
+     * @return true if the specified element is in the list
+     */
+    @Override
+    public boolean contains(E element) {
+        for (int i = 0; i < size; i++) {
+            if (element.equals((E) array[i])) return true;
+        }
+        return false;
+    }
+
+    /**
+     * If required increases the capacity of the array to the specified size
+     *
+     * @param minCapacity minimum capacity required
+     */
+    public void ensureCapacity(int minCapacity) {
+        if (array.length < minCapacity) {
+            Object[] tmp = new Object[minCapacity];
+            for (int i = 0; i < size; i++) {
+                tmp[i] = array[calculateAdjustedIndex(i)];
+            }
+            head = 0;  
+            array = tmp;
+        }
     }
 
     /**
@@ -128,7 +155,7 @@ public class ArrayList<E> implements List<E>, Iterable<E> {
      */
     @Override
     public E get(int index) throws IndexOutOfBoundsException {
-        if (index < 0 || index >= size ) throw new IndexOutOfBoundsException();
+        if (index < 0 || size <= index ) throw new IndexOutOfBoundsException();
         return (E) array[calculateAdjustedIndex(index)];
     }
 
@@ -142,7 +169,7 @@ public class ArrayList<E> implements List<E>, Iterable<E> {
      */
     public E getFirst() throws NoSuchElementException {
         if (size == 0) throw new NoSuchElementException();
-        return (E) array[calculateAdjustedIndex(0)];
+        return (E) array[head];
     }
 
     /**
@@ -159,13 +186,11 @@ public class ArrayList<E> implements List<E>, Iterable<E> {
     }
 
     private void grow() {
-        Object[] tmp = new Object[capacity * 2];
-        for (int i = 0; i < size; i++) {
-            tmp[i] = array[calculateAdjustedIndex(i)];
+        if (array.length > (DEFAULT_CAPACITY / 2)) {
+            ensureCapacity(array.length * 2);
+        } else {
+            ensureCapacity(DEFAULT_CAPACITY);
         }
-        head = 0;
-        capacity = capacity * 2;
-        array = tmp;
     }
 
     /**
@@ -174,6 +199,22 @@ public class ArrayList<E> implements List<E>, Iterable<E> {
     @Override
     public Iterator<E> iterator() {
         return new ArrayListIterator();
+    }
+
+    /**
+     * Trims the list to the exact size of the number of elements in the list.
+     *
+     * <p>Complexity: O(n).
+     */
+    public void trimToSize() {
+        if (array.length > size){
+            Object[] tmp = new Object[size];
+            for (int i = 0; i < size; i++) {
+                tmp[i] = array[calculateAdjustedIndex(i)];
+            }
+            head = 0;
+            array = tmp;
+        }
     }
 
     /**
@@ -188,15 +229,33 @@ public class ArrayList<E> implements List<E>, Iterable<E> {
     public void remove(int index) throws IndexOutOfBoundsException {
         if (index < 0 || index >= size) throw new IndexOutOfBoundsException();
         if (index == 0) {
-            removeFirst();
-        } else if (index == (size - 1)) {
-            removeLast();
-        } else {
+            array[calculateAdjustedIndex(0)] = null;
+            head = calculateAdjustedIndex(1);
+        } else if (index < (size - 1)) {
             for (int i = (index + 1); i < size; i++) {
                 array[calculateAdjustedIndex(i - 1)] = array[calculateAdjustedIndex(i)];
             }
-            array[size - 1] = null;
-            size--;
+            array[calculateAdjustedIndex(size - 1)] = null;
+        } else {
+            array[calculateAdjustedIndex(size - 1)] = null;
+        }
+        size--;
+    }
+
+    /**
+     * Removes the first instance of the element in the list if it exists.
+     *
+     * <p>Complexity: O(n).
+     *
+     * @param element element to be removed
+     */
+    @Override
+    public void remove(E element) {
+        for (int i = 0; i < size; i++) {
+            if (element.equals((E) array[calculateAdjustedIndex(i)])) {
+                remove(i);
+                return;
+            }
         }
     }
 
@@ -209,9 +268,7 @@ public class ArrayList<E> implements List<E>, Iterable<E> {
      */
     public void removeFirst() throws NoSuchElementException {
         if (size == 0) throw new NoSuchElementException();
-        array[calculateAdjustedIndex(0)] = null;
-        head = calculateAdjustedIndex(1);
-        size--;
+        remove(0);
     }
 
     /**
@@ -223,8 +280,7 @@ public class ArrayList<E> implements List<E>, Iterable<E> {
      */
     public void removeLast() throws NoSuchElementException {
         if (size == 0) throw new NoSuchElementException();
-        array[calculateAdjustedIndex(size - 1)] = null;
-        size--;
+        remove(size - 1);
     }
 
     /**
@@ -233,13 +289,13 @@ public class ArrayList<E> implements List<E>, Iterable<E> {
      * <p>Complexity: O(1).
      * 
      * @param index index of the element to be overwritten
-     * @param e element to be set
+     * @param element element to be set
      * @throws IndexOutOfBoundsException index specified is negative or greater then the length of the list
      */
     @Override
-    public void set(int index, E e) throws IndexOutOfBoundsException {
+    public void set(int index, E element) throws IndexOutOfBoundsException {
         if (index < 0 || index >= size) throw new IndexOutOfBoundsException();
-        array[calculateAdjustedIndex(index)] = e;
+        array[calculateAdjustedIndex(index)] = element;
     }
 
     /**

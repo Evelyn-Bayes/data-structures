@@ -11,9 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit test for the ArrayList class..
+ * Unit test for the ArrayList class.
  */
 public class ArrayListTest {
+
+    private final int MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS = 777;
 
     private ArrayList<Integer> emptyList;
     private ArrayList<Integer> singleElementList;
@@ -251,6 +253,56 @@ public class ArrayListTest {
     }
 
     @Test
+    public void testRemoveObjectMethodOnStartOfList() {
+        emptyList.remove(Integer.valueOf(0));
+
+        singleElementList.remove(Integer.valueOf(0));
+        assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
+
+        multiElementList.remove(Integer.valueOf(0));
+        assertEquals(1, multiElementList.get(0));
+        assertEquals(2, multiElementList.get(1));
+    }
+
+    @Test
+    public void testRemoveObjectMethodOnEndOfList() {
+        multiElementList.remove(Integer.valueOf(2));
+        assertEquals(0, multiElementList.get(0));
+        assertEquals(1, multiElementList.get(1));
+        assertThrows(IndexOutOfBoundsException.class, () -> {multiElementList.get(2);});
+    }
+
+    @Test
+    public void testRemoveObjectMethodOnMiddleOfList() {
+        multiElementList.remove(Integer.valueOf(1));
+        assertEquals(0, multiElementList.get(0));
+        assertEquals(2, multiElementList.get(1));
+    }
+
+    @Test
+    public void testRemoveObjectMethodOnInvalidObject() {
+        multiElementList.remove(Integer.valueOf(3));
+        assertEquals(0, multiElementList.get(0));
+        assertEquals(1, multiElementList.get(1));
+        assertEquals(2, multiElementList.get(2));
+    }
+
+    @Test
+    public void testRemoveObjectMethodHandlesOrderCorrectlyForListContainingDuplicates() {
+        DoubleLinkedList<Integer> listWithDuplicates = new DoubleLinkedList<Integer>();
+        listWithDuplicates.addLast(0);
+        listWithDuplicates.addLast(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS);
+        listWithDuplicates.addLast(1);
+        listWithDuplicates.addLast(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS);
+
+        listWithDuplicates.remove(Integer.valueOf(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS));
+
+        assertEquals(0, listWithDuplicates.get(0));
+        assertEquals(1, listWithDuplicates.get(1));
+        assertEquals(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS, listWithDuplicates.get(2));
+    }
+
+    @Test
     public void testClearMethod() {
         multiElementList.clear();
         assertEquals(0, multiElementList.size());
@@ -269,13 +321,27 @@ public class ArrayListTest {
 
     @Test
     public void testResize() {
-        for (int i = 3; i < 13; i++) {
+        final int currentListSize = multiElementList.size();
+        final int defaultCapacity = 10;
+        final int newListSize = defaultCapacity + currentListSize;
+        for (int i = currentListSize; i < newListSize; i++) {
             multiElementList.addLast(i);
         }
-        assertEquals(13, multiElementList.size());
+        assertEquals(newListSize, multiElementList.size());
 
-        for (int i = 0; i < 13; i++) {
+        for (int i = 0; i < newListSize; i++) {
             assertEquals(i, multiElementList.get(i));
         }
+    }
+
+    @Test
+    public void testContains() {
+        assertEquals(false, emptyList.contains(0));
+        assertEquals(true, singleElementList.contains(0));
+        assertEquals(false, singleElementList.contains(1));
+        assertEquals(true, multiElementList.contains(0));
+        assertEquals(true, multiElementList.contains(1));
+        assertEquals(true, multiElementList.contains(2));
+        assertEquals(false, multiElementList.contains(3));
     }
 }

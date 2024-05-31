@@ -1,0 +1,9 @@
+Bugs:
+- Review if any bugs arise from hanging references in the DoubleLinkedList class and write a test case for identifying when they occur
+- Add tests showing the ArrayList class continues to function after the internal 'head' has been moved back and forth and 'array' has been shrunk and expanded
+
+Cleanliness:
+- Introduce private methods to 'link' and 'unlink' nodes in the LinkedList classes. These can skip the usual safety checks etc which can be kept in the public methods
+
+Optimizations:
+- Review methods to ensure JVM inlining can occur
