@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.lang.IndexOutOfBoundsException;
 import java.lang.Integer;
 import java.util.NoSuchElementException;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,23 +16,32 @@ import org.junit.jupiter.api.Test;
  */
 public class ArrayListTest {
 
-    private final int MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS = 777;
-
     private ArrayList<Integer> emptyList;
     private ArrayList<Integer> singleElementList;
-    private ArrayList<Integer> multiElementList;;
+    private ArrayList<Integer> multiElementList;
+    private ArrayList<Integer> atCapacityList;
 
     @BeforeEach
     public void setup() {
-        emptyList = new ArrayList<Integer>();
-        
-        singleElementList = new ArrayList<Integer>();
-        singleElementList.addLast(0);
+        emptyList = toList(IntStream.empty().toArray());
+        singleElementList = toList(IntStream.of(0).toArray());
+        multiElementList = toList(IntStream.range(0, 3).toArray());
+        atCapacityList = toList(IntStream.range(0, 10).toArray());
+    }
 
-        multiElementList = new ArrayList<Integer>();
-        multiElementList.addLast(0);
-        multiElementList.addLast(1);
-        multiElementList.addLast(2);
+    private ArrayList<Integer> toList(int[] array) {
+        ArrayList<Integer> list = new ArrayList<>();
+        for (int i : array) {
+            list.addLast(i);
+        }
+        return list;
+    }
+
+    private void compare(ArrayList<Integer> list, int[] array) {
+        assertEquals(array.length, list.size());
+        for (int i = 0; i < array.length; i++) {
+            assertEquals(array[i], list.get(i));
+        }
     }
 
     @Test
@@ -73,79 +83,64 @@ public class ArrayListTest {
     @Test
     public void testAddFirstMethod() {
         emptyList.addFirst(3);
-        assertEquals(3, emptyList.get(0));
+        compare(emptyList, IntStream.of(3).toArray());
         
         singleElementList.addFirst(3);
-        assertEquals(3, singleElementList.get(0));
-        assertEquals(0, singleElementList.get(1));
+        compare(singleElementList, IntStream.of(3,0).toArray());
         
         multiElementList.addFirst(3);
-        assertEquals(3, multiElementList.get(0));
-        assertEquals(0, multiElementList.get(1));
-        assertEquals(1, multiElementList.get(2));
-        assertEquals(2, multiElementList.get(3));
+        compare(multiElementList, IntStream.of(3,0,1,2).toArray());
     }
 
     @Test
     public void testAddLastMethod() {
         emptyList.addLast(3);
-        assertEquals(3, emptyList.get(0));
+        compare(emptyList, IntStream.of(3).toArray());
         
         singleElementList.addLast(3);
-        assertEquals(0, singleElementList.get(0));
-        assertEquals(3, singleElementList.get(1));
+        compare(singleElementList, IntStream.of(0,3).toArray());
         
         multiElementList.addLast(3);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(2, multiElementList.get(2));
-        assertEquals(3, multiElementList.get(3));
+        compare(multiElementList, IntStream.of(0,1,2,3).toArray());
     }
 
 
     @Test
     public void testAddMethodOnStartOfList() {
         emptyList.add(0, 3);
-        assertEquals(3, emptyList.get(0));
+        compare(emptyList, IntStream.of(3).toArray());
         
         singleElementList.add(0, 3);
-        assertEquals(3, singleElementList.get(0));
-        assertEquals(0, singleElementList.get(1));
+        compare(singleElementList, IntStream.of(3,0).toArray());
         
         multiElementList.add(0, 3);
-        assertEquals(3, multiElementList.get(0));
-        assertEquals(0, multiElementList.get(1));
-        assertEquals(1, multiElementList.get(2));
-        assertEquals(2, multiElementList.get(3));
+        compare(multiElementList, IntStream.of(3,0,1,2).toArray());
     }
 
     @Test
     public void testAddMethodOnEndOfList() {
         singleElementList.add(1, 3);
-        assertEquals(0, singleElementList.get(0));
-        assertEquals(3, singleElementList.get(1));
+        compare(singleElementList, IntStream.of(0,3).toArray());
         
         multiElementList.add(3, 3);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(2, multiElementList.get(2));
-        assertEquals(3, multiElementList.get(3));
+        compare(multiElementList, IntStream.of(0,1,2,3).toArray());
     }
 
     @Test
     public void testAddMethodOnMiddleOfList() {
         multiElementList.add(2, 3);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(3, multiElementList.get(2));
-        assertEquals(2, multiElementList.get(3));
+        compare(multiElementList, IntStream.of(0,1,3,2).toArray());
     }
 
     @Test
     public void testAddIndexMethodOnBadIndex() {
         assertThrows(IndexOutOfBoundsException.class, () -> {emptyList.add(-1, 3);});
         assertThrows(IndexOutOfBoundsException.class, () -> {emptyList.add(1, 3);});
+
+        assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.add(-1, 3);});
         assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.add(2, 3);});
+
+        assertThrows(IndexOutOfBoundsException.class, () -> {multiElementList.add(-1, 3);});
         assertThrows(IndexOutOfBoundsException.class, () -> {multiElementList.add(4, 3);});
     }
 
@@ -154,11 +149,10 @@ public class ArrayListTest {
         assertThrows(NoSuchElementException.class, () -> {emptyList.removeFirst();});
 
         singleElementList.removeFirst();
-        assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
+        compare(singleElementList, IntStream.empty().toArray());
 
         multiElementList.removeFirst();
-        assertEquals(1, multiElementList.get(0));
-        assertEquals(2, multiElementList.get(1));
+        compare(multiElementList, IntStream.of(1,2).toArray());
     }
 
     @Test
@@ -166,11 +160,10 @@ public class ArrayListTest {
         assertThrows(NoSuchElementException.class, () -> {emptyList.removeLast();});
 
         singleElementList.removeLast();
-        assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
+        compare(singleElementList, IntStream.empty().toArray());
 
         multiElementList.removeLast();
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
+        compare(multiElementList, IntStream.of(0,1).toArray());
     }
 
     @Test
@@ -178,25 +171,22 @@ public class ArrayListTest {
         assertThrows(IndexOutOfBoundsException.class, () -> {emptyList.remove(0);});
 
         singleElementList.remove(0);
-        assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
+        compare(singleElementList, IntStream.empty().toArray());
 
         multiElementList.remove(0);
-        assertEquals(1, multiElementList.get(0));
-        assertEquals(2, multiElementList.get(1));
+        compare(multiElementList, IntStream.of(1,2).toArray());
     }
 
     @Test
     public void testRemoveMethodOnEndOfList() {
         multiElementList.remove(2);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
+        compare(multiElementList, IntStream.of(0,1).toArray());
     }
 
     @Test
     public void testRemoveMethodOnMiddleOfList() {
         multiElementList.remove(1);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(2, multiElementList.get(1));
+        compare(multiElementList, IntStream.of(0,2).toArray());
     }
 
     @Test
@@ -216,28 +206,22 @@ public class ArrayListTest {
         assertThrows(IndexOutOfBoundsException.class, () -> {emptyList.set(0, 3);});
 
         singleElementList.set(0, 3);
-        assertEquals(3, singleElementList.get(0));
+        compare(singleElementList, IntStream.of(3).toArray());
 
         multiElementList.set(0, 3);
-        assertEquals(3, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(2, multiElementList.get(2));
+        compare(multiElementList, IntStream.of(3,1,2).toArray());
     }
 
     @Test
     public void testSetMethodOnEndOfList() {
         multiElementList.set(2, 3);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(3, multiElementList.get(2));
+        compare(multiElementList, IntStream.of(0,1,3).toArray());
     }
 
     @Test
     public void testSetMethodOnMiddleOfList() {
         multiElementList.set(1, 3);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(3, multiElementList.get(1));
-        assertEquals(2, multiElementList.get(2));
+        compare(multiElementList, IntStream.of(0,3,2).toArray());
     }
 
     @Test
@@ -255,51 +239,38 @@ public class ArrayListTest {
     @Test
     public void testRemoveObjectMethodOnStartOfList() {
         emptyList.remove(Integer.valueOf(0));
+        compare(emptyList, IntStream.empty().toArray());
 
         singleElementList.remove(Integer.valueOf(0));
-        assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
+        compare(singleElementList, IntStream.empty().toArray());
 
         multiElementList.remove(Integer.valueOf(0));
-        assertEquals(1, multiElementList.get(0));
-        assertEquals(2, multiElementList.get(1));
+        compare(multiElementList, IntStream.of(1,2).toArray());
     }
 
     @Test
     public void testRemoveObjectMethodOnEndOfList() {
         multiElementList.remove(Integer.valueOf(2));
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertThrows(IndexOutOfBoundsException.class, () -> {multiElementList.get(2);});
+        compare(multiElementList, IntStream.of(0,1).toArray());
     }
 
     @Test
     public void testRemoveObjectMethodOnMiddleOfList() {
         multiElementList.remove(Integer.valueOf(1));
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(2, multiElementList.get(1));
+        compare(multiElementList, IntStream.of(0,2).toArray());
     }
 
     @Test
     public void testRemoveObjectMethodOnInvalidObject() {
         multiElementList.remove(Integer.valueOf(3));
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(2, multiElementList.get(2));
+        compare(multiElementList, IntStream.of(0,1,2).toArray());
     }
 
     @Test
     public void testRemoveObjectMethodHandlesOrderCorrectlyForListContainingDuplicates() {
-        DoubleLinkedList<Integer> listWithDuplicates = new DoubleLinkedList<Integer>();
-        listWithDuplicates.addLast(0);
-        listWithDuplicates.addLast(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS);
-        listWithDuplicates.addLast(1);
-        listWithDuplicates.addLast(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS);
-
-        listWithDuplicates.remove(Integer.valueOf(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS));
-
-        assertEquals(0, listWithDuplicates.get(0));
-        assertEquals(1, listWithDuplicates.get(1));
-        assertEquals(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS, listWithDuplicates.get(2));
+        ArrayList<Integer> listWithDuplicates = toList(IntStream.of(0,3,1,3,2).toArray());
+        listWithDuplicates.remove(Integer.valueOf(3));
+        compare(listWithDuplicates, IntStream.of(0,1,3,2).toArray());
     }
 
     @Test
@@ -308,6 +279,7 @@ public class ArrayListTest {
         assertEquals(0, multiElementList.size());
         assertThrows(NoSuchElementException.class, () -> {multiElementList.getFirst();});
         assertThrows(NoSuchElementException.class, () -> {multiElementList.getLast();});
+        assertEquals(10, multiElementList.capacity());
     }
 
     @Test
@@ -320,18 +292,21 @@ public class ArrayListTest {
     }
 
     @Test
-    public void testResize() {
-        final int currentListSize = multiElementList.size();
-        final int defaultCapacity = 10;
-        final int newListSize = defaultCapacity + currentListSize;
-        for (int i = currentListSize; i < newListSize; i++) {
-            multiElementList.addLast(i);
-        }
-        assertEquals(newListSize, multiElementList.size());
+    public void testListGrowsToFitNewElements() {
+        assertEquals(10, atCapacityList.size());
+        assertEquals(10, atCapacityList.capacity());
+        atCapacityList.addLast(10);
+        assertEquals(11, atCapacityList.size());
+        assertEquals(20, atCapacityList.capacity());
+        compare(atCapacityList, IntStream.of(0,1,2,3,4,5,6,7,8,9,10).toArray());
+    }
 
-        for (int i = 0; i < newListSize; i++) {
-            assertEquals(i, multiElementList.get(i));
-        }
+    @Test
+    public void testTrimToSize() {
+        atCapacityList.addLast(10);
+        atCapacityList.trimToSize();
+        assertEquals(11, atCapacityList.capacity());
+        compare(atCapacityList, IntStream.of(0,1,2,3,4,5,6,7,8,9,10).toArray());
     }
 
     @Test

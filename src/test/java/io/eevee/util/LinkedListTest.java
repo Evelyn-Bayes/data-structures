@@ -6,12 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.lang.IndexOutOfBoundsException;
 import java.lang.Integer;
 import java.util.NoSuchElementException;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit test for the LinkedList class..
+ * Unit test for the LinkedList class.
  */
 public class LinkedListTest {
 
@@ -19,45 +20,59 @@ public class LinkedListTest {
     private LinkedList<Integer> singleElementList;
     private LinkedList<Integer> multiElementList;
 
-    private final int MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS = 777;
-
     @BeforeEach
     public void setup() {
-        emptyList = new LinkedList<Integer>();
-        
-        singleElementList = new LinkedList<Integer>();
-        singleElementList.addLast(0);
+        emptyList = toList(IntStream.empty().toArray());
+        singleElementList = toList(IntStream.of(0).toArray());
+        multiElementList = toList(IntStream.range(0, 3).toArray());
+    }
 
-        multiElementList = new LinkedList<Integer>();
-        multiElementList.addLast(0);
-        multiElementList.addLast(1);
-        multiElementList.addLast(2);
+    private LinkedList<Integer> toList(int[] array) {
+        LinkedList<Integer> list = new LinkedList<>();
+        for (int i : array) {
+            list.addLast(i);
+        }
+        return list;
+    }
+
+    private void compare(LinkedList<Integer> list, int[] array) {
+        assertEquals(array.length, list.size());
+        for (int i = 0; i < array.length; i++) {
+            assertEquals(array[i], list.get(i));
+        }
     }
 
     @Test
     public void testSizeMethod() {
         assertEquals(0, emptyList.size());
+
         assertEquals(1, singleElementList.size());
+
         assertEquals(3, multiElementList.size());
     }
 
     @Test
     public void testGetFirstMethod() {
         assertThrows(NoSuchElementException.class, () -> {emptyList.getFirst();});
+
         assertEquals(0, singleElementList.getFirst());
+
         assertEquals(0, multiElementList.getFirst());
     }
 
     @Test
     public void testGetLastMethod() {
         assertThrows(NoSuchElementException.class, () -> {emptyList.getLast();});
+
         assertEquals(0, singleElementList.getLast());
+
         assertEquals(2, multiElementList.getLast());
     }
 
     @Test
     public void testGetMethod() {
         assertEquals(0, singleElementList.get(0));
+
         assertEquals(0, multiElementList.get(0));
         assertEquals(1, multiElementList.get(1));
         assertEquals(2, multiElementList.get(2));
@@ -66,86 +81,73 @@ public class LinkedListTest {
     @Test
     public void testGetMethodOnBadIndex() {
         assertThrows(IndexOutOfBoundsException.class, () -> {emptyList.get(0);});
+
         assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(-1);});
         assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(1);});
+
+        assertThrows(IndexOutOfBoundsException.class, () -> {multiElementList.get(-1);});
+        assertThrows(IndexOutOfBoundsException.class, () -> {multiElementList.get(3);});
     }
 
     @Test
     public void testAddFirstMethod() {
         emptyList.addFirst(3);
-        assertEquals(3, emptyList.get(0));
+        compare(emptyList, IntStream.of(3).toArray());
         
         singleElementList.addFirst(3);
-        assertEquals(3, singleElementList.get(0));
-        assertEquals(0, singleElementList.get(1));
+        compare(singleElementList, IntStream.of(3,0).toArray());
         
         multiElementList.addFirst(3);
-        assertEquals(3, multiElementList.get(0));
-        assertEquals(0, multiElementList.get(1));
-        assertEquals(1, multiElementList.get(2));
-        assertEquals(2, multiElementList.get(3));
+        compare(multiElementList, IntStream.of(3,0,1,2).toArray());
     }
 
     @Test
     public void testAddLastMethod() {
         emptyList.addLast(3);
-        assertEquals(3, emptyList.get(0));
+        compare(emptyList, IntStream.of(3).toArray());
         
         singleElementList.addLast(3);
-        assertEquals(0, singleElementList.get(0));
-        assertEquals(3, singleElementList.get(1));
+        compare(singleElementList, IntStream.of(0,3).toArray());
         
         multiElementList.addLast(3);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(2, multiElementList.get(2));
-        assertEquals(3, multiElementList.get(3));
+        compare(multiElementList, IntStream.of(0,1,2,3).toArray());
     }
 
 
     @Test
     public void testAddMethodOnStartOfList() {
         emptyList.add(0, 3);
-        assertEquals(3, emptyList.get(0));
+        compare(emptyList, IntStream.of(3).toArray());
         
         singleElementList.add(0, 3);
-        assertEquals(3, singleElementList.get(0));
-        assertEquals(0, singleElementList.get(1));
+        compare(singleElementList, IntStream.of(3,0).toArray());
         
         multiElementList.add(0, 3);
-        assertEquals(3, multiElementList.get(0));
-        assertEquals(0, multiElementList.get(1));
-        assertEquals(1, multiElementList.get(2));
-        assertEquals(2, multiElementList.get(3));
+        compare(multiElementList, IntStream.of(3,0,1,2).toArray());
     }
 
     @Test
     public void testAddMethodOnEndOfList() {
         singleElementList.add(1, 3);
-        assertEquals(0, singleElementList.get(0));
-        assertEquals(3, singleElementList.get(1));
+        compare(singleElementList, IntStream.of(0,3).toArray());
         
         multiElementList.add(3, 3);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(2, multiElementList.get(2));
-        assertEquals(3, multiElementList.get(3));
+        compare(multiElementList, IntStream.of(0,1,2,3).toArray());
     }
 
     @Test
     public void testAddMethodOnMiddleOfList() {
-        multiElementList.add(1, 3);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(3, multiElementList.get(1));
-        assertEquals(1, multiElementList.get(2));
-        assertEquals(2, multiElementList.get(3));
+        multiElementList.add(2, 3);
+        compare(multiElementList, IntStream.of(0,1,3,2).toArray());
     }
 
     @Test
     public void testAddIndexMethodOnBadIndex() {
         assertThrows(IndexOutOfBoundsException.class, () -> {emptyList.add(-1, 3);});
         assertThrows(IndexOutOfBoundsException.class, () -> {emptyList.add(1, 3);});
+
         assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.add(2, 3);});
+
         assertThrows(IndexOutOfBoundsException.class, () -> {multiElementList.add(4, 3);});
     }
 
@@ -154,12 +156,9 @@ public class LinkedListTest {
         assertThrows(NoSuchElementException.class, () -> {emptyList.removeFirst();});
 
         singleElementList.removeFirst();
-        singleElementList.assertInvarients();
         assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
 
         multiElementList.removeFirst();
-        assertEquals(1, multiElementList.get(0));
-        assertEquals(2, multiElementList.get(1));
     }
 
     @Test
@@ -172,8 +171,7 @@ public class LinkedListTest {
 
         multiElementList.removeLast();
         multiElementList.assertInvarients();
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
+        compare(multiElementList, IntStream.of(0,1).toArray());
     }
 
     @Test
@@ -185,23 +183,21 @@ public class LinkedListTest {
         assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
 
         multiElementList.remove(0);
-        assertEquals(1, multiElementList.get(0));
-        assertEquals(2, multiElementList.get(1));
+        multiElementList.assertInvarients();
+        compare(multiElementList, IntStream.of(1,2).toArray());
     }
 
     @Test
     public void testRemoveMethodOnEndOfList() {
         multiElementList.remove(2);
         multiElementList.assertInvarients();
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
+        compare(multiElementList, IntStream.of(0,1).toArray());
     }
 
     @Test
     public void testRemoveMethodOnMiddleOfList() {
         multiElementList.remove(1);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(2, multiElementList.get(1));
+        compare(multiElementList, IntStream.of(0,2).toArray());
     }
 
     @Test
@@ -221,28 +217,22 @@ public class LinkedListTest {
         assertThrows(IndexOutOfBoundsException.class, () -> {emptyList.set(0, 3);});
 
         singleElementList.set(0, 3);
-        assertEquals(3, singleElementList.get(0));
+        compare(singleElementList, IntStream.of(3).toArray());
 
         multiElementList.set(0, 3);
-        assertEquals(3, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(2, multiElementList.get(2));
+        compare(multiElementList, IntStream.of(3,1,2).toArray());
     }
 
     @Test
     public void testSetMethodOnEndOfList() {
         multiElementList.set(2, 3);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(3, multiElementList.get(2));
+        compare(multiElementList, IntStream.of(0,1,3).toArray());
     }
 
     @Test
     public void testSetMethodOnMiddleOfList() {
         multiElementList.set(1, 3);
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(3, multiElementList.get(1));
-        assertEquals(2, multiElementList.get(2));
+        compare(multiElementList, IntStream.of(0,3,2).toArray());
     }
 
     @Test
@@ -260,8 +250,9 @@ public class LinkedListTest {
     @Test
     public void testClearMethod() {
         multiElementList.clear();
+        compare(multiElementList, IntStream.empty().toArray());
+
         multiElementList.assertInvarients();
-        assertEquals(0, multiElementList.size());
         assertThrows(NoSuchElementException.class, () -> {multiElementList.getFirst();});
         assertThrows(NoSuchElementException.class, () -> {multiElementList.getLast();});
     }
@@ -278,8 +269,10 @@ public class LinkedListTest {
     @Test
     public void testContains() {
         assertEquals(false, emptyList.contains(0));
+
         assertEquals(true, singleElementList.contains(0));
         assertEquals(false, singleElementList.contains(1));
+
         assertEquals(true, multiElementList.contains(0));
         assertEquals(true, multiElementList.contains(1));
         assertEquals(true, multiElementList.contains(2));
@@ -295,47 +288,32 @@ public class LinkedListTest {
         assertThrows(IndexOutOfBoundsException.class, () -> {singleElementList.get(0);});
 
         multiElementList.remove(Integer.valueOf(0));
-        assertEquals(1, multiElementList.get(0));
-        assertEquals(2, multiElementList.get(1));
+        multiElementList.assertInvarients();
+        compare(multiElementList, IntStream.of(1,2).toArray());
     }
 
     @Test
     public void testRemoveObjectMethodOnEndOfList() {
         multiElementList.remove(Integer.valueOf(2));
         multiElementList.assertInvarients();
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertThrows(IndexOutOfBoundsException.class, () -> {multiElementList.get(2);});
+        compare(multiElementList, IntStream.of(0,1).toArray());
     }
 
     @Test
     public void testRemoveObjectMethodOnMiddleOfList() {
         multiElementList.remove(Integer.valueOf(1));
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(2, multiElementList.get(1));
+        compare(multiElementList, IntStream.of(0,2).toArray());
     }
 
     @Test
     public void testRemoveObjectMethodOnInvalidObject() {
         multiElementList.remove(Integer.valueOf(3));
-        assertEquals(0, multiElementList.get(0));
-        assertEquals(1, multiElementList.get(1));
-        assertEquals(2, multiElementList.get(2));
+        compare(multiElementList, IntStream.of(0,1,2).toArray());
     }
 
     @Test
     public void testRemoveObjectMethodHandlesOrderCorrectlyForListContainingDuplicates() {
-        LinkedList<Integer> listWithDuplicates = new LinkedList<Integer>();
-        listWithDuplicates.addLast(0);
-        listWithDuplicates.addLast(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS);
-        listWithDuplicates.addLast(1);
-        listWithDuplicates.addLast(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS);
-
-        listWithDuplicates.remove(Integer.valueOf(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS));
-
-        listWithDuplicates.assertInvarients();
-        assertEquals(0, listWithDuplicates.get(0));
-        assertEquals(1, listWithDuplicates.get(1));
-        assertEquals(MAGIC_NUMBER_NOT_IN_DEFAULT_LISTS, listWithDuplicates.get(2));
+        LinkedList<Integer> listWithDuplicates = toList(IntStream.of(0,3,1,3,2).toArray());
+        listWithDuplicates.remove(Integer.valueOf(3));
     }
 }

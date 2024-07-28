@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 
 
 /**
- * Hash set implementation of the {@code Set} interface.
+ * Hash set implementation of the {@code Collection} interface.
  *
  * <p>Complexity:
  * <ul>
@@ -15,12 +15,11 @@ import java.util.NoSuchElementException;
  *   <li>Remove - O(1)
  * </ul>
  *
- * @see Set
+ * @see Collection
  * @see Iterable
  * @param <E> the type of the elements stored in this collection
  */
-public class HashSet<E> implements Set<E> {
-//public class HashSet<E> implements Set<E>, Iterable<E> {
+public class HashSet<E> implements Collection<E> {
     private Object[] array;
     private int size;
 
@@ -38,14 +37,15 @@ public class HashSet<E> implements Set<E> {
      *
      * @param element element to be appended
      */
+    @Override
     public void add(E element) {
         int hash = element.hashCode() % array.length;
         if (array[hash] == null) {
             array[hash] = new LinkedList<E>();
-            ((LinkedList<E>) array[hash]).addFirst(element);
+            ((List<E>) array[hash]).add(element);
         } else {
-            if (!((LinkedList<E>) array[hash]).contains(element)) {
-                ((LinkedList<E>) array[hash]).addFirst(element);
+            if (!((List<E>) array[hash]).contains(element)) {
+                ((List<E>) array[hash]).add(element);
             } else {
                 return;
             }
@@ -75,7 +75,7 @@ public class HashSet<E> implements Set<E> {
     @Override
     public boolean contains(E element) {
         int hash = element.hashCode() % array.length;
-        if ((array[hash] != null) && ((LinkedList<E>) array[hash]).contains(element)) {
+        if ((array[hash] != null) && ((List<E>) array[hash]).contains(element)) {
             return true;
         } else {
             return false;
@@ -85,12 +85,35 @@ public class HashSet<E> implements Set<E> {
     /**
      * Returns iterator of the set.
      */
-    /*
     @Override
     public Iterator<E> iterator() {
-        return new LinkedListIterator(head);
+        return new HashSetIterator();
     }
-    */
+
+    private class HashSetIterator implements Iterator<E> {
+        private int elementNum;
+        private int index;
+        private Iterator<E> iterator;
+
+        HashSetIterator() {
+            elementNum = 0;
+            index = 0;
+            iterator = null;
+        }
+
+        public E next() {
+            elementNum++;
+            while (iterator == null || iterator.hasNext() == false) {
+                iterator = ((Collection) array[index]).iterator();
+                index++;
+            }
+            return iterator.next();
+        }
+
+        public boolean hasNext() {
+            return elementNum < size;
+        }
+    }
 
     /**
      * Removes the element from the set.
@@ -99,13 +122,14 @@ public class HashSet<E> implements Set<E> {
      *
      * @param element element to be removed
      */
+    @Override
     public void remove(E element) {
         int hash = element.hashCode() % array.length;
-        if ((array[hash] != null) && ((LinkedList<E>) array[hash]).contains(element)) {
-            if (((LinkedList<E>) array[hash]).size() == 1) {
+        if ((array[hash] != null) && ((List<E>) array[hash]).contains(element)) {
+            if (((List<E>) array[hash]).size() == 1) {
                 array[hash] = null;
             } else {
-                ((LinkedList<E>) array[hash]).remove(element);
+                ((List<E>) array[hash]).remove(element);
             }
             size--;
         }
@@ -122,28 +146,4 @@ public class HashSet<E> implements Set<E> {
     public int size() {
         return size;
     }
-
-    /* 
-    private class LinkedListIterator<E> implements Iterator<E> {
-        private int index;
-        private Node<E> node;
-        private E next;
-
-        LinkedListIterator(Node<E> head) {
-            index = 0;
-            node = head;
-        }
-
-        public E next() {
-            index++;
-            next = node.element;
-            node = node.next;
-            return next;
-        }
-
-        public boolean hasNext() {
-            return index < size;
-        }
-    }
-    */
 }

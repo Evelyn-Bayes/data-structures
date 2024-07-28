@@ -5,68 +5,65 @@ import java.util.NoSuchElementException;
 
 
 /**
- * Single linked list implementation of the {@code List} interface.
+ * Double linked list implementation of the {@code List} interface.
  *
  * <p>Complexity:
  * <ul>
  *   <li>Space - O(n)
  *   <li>Access - O(n)
- *   <li>Insert - O(1)
- *   <li>Remove - O(1)
+ *   <li>Insert - O(n)
+ *   <li>Remove - O(n)
  * </ul>
- *
- * <p>In the above complexity breakdown a method like {@code remove(int index)}
- * would constitute an 'access' operation to locate the element and a 'remove'
- * to delete it from the list.
+ * 
+ * <p>Certain operations such as adding or removing elements from the head and tail of the list can be performed in
+ * constant time.
  *
  * @see List
- * @see Iterable
  * @param <E> the type of the elements stored in this collection
  */
 public class LinkedList<E> implements List<E>, Iterable<E> {
     private Node<E> head;
     private Node<E> tail;
-    private int size;
+    int size;
 
     LinkedList() {
         head = null;
         tail = null;
         size = 0;
     }
-
+    
     // Visible and strictly available for testing
     void assertInvarients() {
         assert (size == 0)
             ? (head == null && tail == null)
-            : (tail.next == null);
+            : (head.previous == null && tail.next == null);
     }
 
     /**
-     * Inserts the element at the specific index.
+     * Inserts the specified element at the specified position in the list.
      *
      * <p>Complexity: O(n).
-     *
      * @param index index at which the specified element is to be inserted
      * @param element element to be inserted
      * @throws IndexOutOfBoundsException index specified is negative or greater then the length of the list
      */
     @Override
-    public void add(int index, E element) throws IndexOutOfBoundsException {
-        if (index < 0 || index > size) {
+    public void add(int index, E element) {
+        if (index < 0 || index > size ) {
             throw new IndexOutOfBoundsException();
         } else if (index == 0) {
             addFirst(element);
-        } else if (index == size) {
-            addLast(element);
-        } else {
+        } else if (index < size) {
             Node<E> node = getNode(index - 1);
-            node.next = new Node(element, node.next);
+            node.next = new Node(element, node.next, node);
             size++;
+        } else {
+            addLast(element);
         }
     }
 
     /**
-     * Inserts the element at the beginning of the list.
+     * Appends the specified element to the beginning of the list.
      *
      * <p>Complexity: O(1).
      *
@@ -78,36 +75,35 @@ public class LinkedList<E> implements List<E>, Iterable<E> {
     }
 
     /**
-     * Inserts the element at the beginning of the list.
+     * Appends the specified element to the beginning of the list.
      *
      * <p>Complexity: O(1).
      *
      * @param element element to be appended
      */
     public void addFirst(E element) {
-        head = new Node<E>(element, head);
-        size++;
-        if (size == 1) {
+        head = new Node<E>(element, head, null);
+        if (size == 0) {
             tail = head;
         }
+        size++;
     }
 
     /**
-     * Inserts the element at the end of the list.
+     * Appends the specified element to the end of the list.
      *
-     * <p>Complexity: O(n).
+     * <p>Complexity: O(1).
      *
      * @param element element to be appended
      */
     public void addLast(E element) {
         if (size == 0) {
-            head = new Node(element, null);
-            tail = head;
+            addFirst(element);
         } else {
-            tail.next = new Node(element, null);
+            tail.next = new Node(element, null, tail);
             tail = tail.next;
+            size++;
         }
-        size++;
     }
 
     /**
@@ -136,7 +132,7 @@ public class LinkedList<E> implements List<E>, Iterable<E> {
         for (int i = 0; i < size; i++) {
             if (node.element.equals(element)) return true;
             node = node.next;
-        } 
+        }
         return false;
     }
 
@@ -150,13 +146,14 @@ public class LinkedList<E> implements List<E>, Iterable<E> {
      * @throws IndexOutOfBoundsException index specified is negative or greater then the length of the list
      */
     @Override
-    public E get(int index) throws IndexOutOfBoundsException {
-        if (index < 0 || index >= size ) throw new IndexOutOfBoundsException();
-        if (index == (size - 1)) {
-            return tail.element;
-        } else {
+    public E get(int index) {
+        if (index < 0 || index >= size ) {
+            throw new IndexOutOfBoundsException();
+        } else if (index < (size - 1)) {
             Node<E> node = getNode(index);
             return node.element;
+        } else {
+            return tail.element;
         }
     }
 
@@ -168,7 +165,7 @@ public class LinkedList<E> implements List<E>, Iterable<E> {
      * @return the first element in the list
      * @throws NoSuchElementException method executed on empty list
      */
-    public E getFirst() throws NoSuchElementException {
+    public E getFirst() {
         if (size == 0) throw new NoSuchElementException();
         return head.element;
     }
@@ -181,7 +178,7 @@ public class LinkedList<E> implements List<E>, Iterable<E> {
      * @return the last element in the list
      * @throws NoSuchElementException method executed on empty list
      */
-    public E getLast() throws NoSuchElementException {
+    public E getLast() {
         if (size == 0) throw new NoSuchElementException();
         return tail.element;
     }
@@ -199,7 +196,29 @@ public class LinkedList<E> implements List<E>, Iterable<E> {
      */
     @Override
     public Iterator<E> iterator() {
-        return new LinkedListIterator(head);
+        return new LinkedListIterator();
+    }
+
+    private class LinkedListIterator implements Iterator<E> {
+        private int index;
+        private Node<E> node;
+        private E next;
+
+        LinkedListIterator() {
+            index = 0;
+            node = head;
+        }
+
+        public E next() {
+            index++;
+            next = node.element;
+            node = node.next;
+            return next;
+        }
+
+        public boolean hasNext() {
+            return index < size;
+        }
     }
 
     /**
@@ -211,15 +230,17 @@ public class LinkedList<E> implements List<E>, Iterable<E> {
      * @throws IndexOutOfBoundsException index specified is negative, greater then the length of the list or method executed on empty list
      */
     @Override
-    public void remove(int index) throws IndexOutOfBoundsException {
-        if (index < 0 || index >= size) throw new IndexOutOfBoundsException();
-        if (index == 0) {
+    public void remove(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException();
+        } else if (index == 0) {
             removeFirst();
         } else if (index == (size - 1)) {
             removeLast();
         } else {
             Node<E> node = getNode(index - 1);
             node.next = node.next.next;
+            node.next.previous = node;
             size--;
         }
     }
@@ -233,15 +254,16 @@ public class LinkedList<E> implements List<E>, Iterable<E> {
      * @throws NoSuchElementException method executed on empty list
      */
     @Override
-    public void remove(E element) throws NoSuchElementException {
+    public void remove(E element) {
         if (size == 0) throw new NoSuchElementException();
         if (element.equals(head.element)) {
             removeFirst();
             return;
         }
-        for (Node<E> node = head; node.next != tail; node = node.next) {
-            if (element.equals(node.next.element)) {
-                node.next = node.next.next;
+        for (Node<E> node = head.next; node.next != null; node = node.next) {
+            if (element.equals(node.element)) {
+                node.previous.next = node.next;
+                node.next.previous = node.previous;
                 size--;
                 return;
             }
@@ -255,15 +277,16 @@ public class LinkedList<E> implements List<E>, Iterable<E> {
      * Removes the first element in the list.
      *
      * <p>Complexity: O(1).
-     * 
+     *
      * @throws NoSuchElementException method executed on empty list
      */
-    public void removeFirst() throws NoSuchElementException {
+    public void removeFirst() {
         if (size == 0) throw new NoSuchElementException();
         if (size == 1) {
             clear();
         } else {
             head = head.next;
+            head.previous = null;
             size--;
         }
     }
@@ -271,32 +294,32 @@ public class LinkedList<E> implements List<E>, Iterable<E> {
     /**
      * Removes the last element in the list.
      *
-     * <p>Complexity: O(n).
+     * <p>Complexity: O(1).
      *
      * @throws NoSuchElementException method executed on empty list
      */
-    public void removeLast() throws NoSuchElementException {
+    public void removeLast() {
         if (size == 0) throw new NoSuchElementException();
         if (size == 1) {
             clear();
         } else {
-            tail = getNode(size - 2);
+            tail = tail.previous;
             tail.next = null;
             size--;
         }
     }
 
     /**
-     * Replaces the element at the specified position in the list.
+     * Overwrites the element at the specified position in the list.
      *
      * <p>Complexity: O(n).
-     * 
+     *
      * @param index index of the element to be overwritten
      * @param element element to be set
      * @throws IndexOutOfBoundsException index specified is negative or greater then the length of the list
      */
     @Override
-    public void set(int index, E element) throws IndexOutOfBoundsException {
+    public void set(int index, E element) {
         if (index < 0 || index >= size) throw new IndexOutOfBoundsException();
         Node<E> node = getNode(index);
         node.element = element;
@@ -314,35 +337,15 @@ public class LinkedList<E> implements List<E>, Iterable<E> {
         return size;
     }
 
-    private class LinkedListIterator<E> implements Iterator<E> {
-        private int index;
-        private Node<E> node;
-        private E next;
-
-        LinkedListIterator(Node<E> head) {
-            index = 0;
-            node = head;
-        }
-
-        public E next() {
-            index++;
-            next = node.element;
-            node = node.next;
-            return next;
-        }
-
-        public boolean hasNext() {
-            return index < size;
-        }
-    }
-
-    private class Node<E> {
+    private static class Node<E> {
         E element;
         Node<E> next;
+        Node<E> previous;
 
-        Node(E element, Node<E> next) {
+        Node(E element, Node<E> next, Node<E> previous) {
             this.element = element;
             this.next = next;
+            this.previous = previous;
         }
     }
 }
