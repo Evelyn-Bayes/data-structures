@@ -294,7 +294,7 @@ public class LinkedBinaryTree<E extends Comparable<E>> implements Collection<E> 
             }
         } else {
             node.parent.rightChild = node.rightChild;
-            if (node.rightLeft == null) return;
+            if (node.rightChild == null) return;
             if (node.parent.leftChild == null) {
                 node.parent.leftChild = node.leftChild;
                 node.leftChild.parent = node.parent.leftChild;
