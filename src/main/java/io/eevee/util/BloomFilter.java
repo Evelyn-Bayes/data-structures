@@ -19,9 +19,24 @@ import java.util.NoSuchElementException;
  */
 public class BloomFilter<E> {
     private boolean[] array;
+    private int numHashFunctions;
+    private double falsePositiveRate;
+
+    private static int DEFAULT_SIZE;
+    private static int DEFAULT_NUM_HASH_FUNCTIONS;
+    private static double DEFAULT_FALSE_POSITIVE_RATE;
 
     BloomFilter() {
-        array = new boolean[arraySize()];
+        array = new boolean[DEFAULT_SIZE];
+    }
+
+    BloomFilter(double expectedFalsePositiveRate, int numElements) {
+        array = new boolean[arraySize(expectedFalsePositiveRate, numElements)];
+    }
+
+    // Visible and strictly available for testing
+    int capacity() {
+        return array.length;
     }
 
     /**
@@ -49,8 +64,9 @@ public class BloomFilter<E> {
         return array[hash] == true;
     }
 
-    // TODO: Fix to calculate size based on required false position rate
-    private int arraySize() {
-        return 1000;
+    private int arraySize(double expectedFalsePositiveRate, int numElements) {
+        double numerator = - numElements * Math.log(expectedFalsePositiveRate);
+        double denominator = Math.pow(Math.log(2), 2);
+        return (int) Math.round(numerator / denominator);
     }
 }
