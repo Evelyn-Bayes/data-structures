@@ -5,10 +5,14 @@ package io.eevee.util;
  **/
 public class Murmur {
 
-    private static final int SEED = 104729;
+    public static final int DEFAULT_SEED = 104729;
 
     public static int hash(byte[] data) {
-        int hash = SEED;
+        return hash(data, DEFAULT_SEED);
+    }
+
+    public static int hash(byte[] data, int seed) {
+        int hash = seed;
 
         final int numblocks = data.length / 4;
         for (int i = 0; i < numblocks; i++) {

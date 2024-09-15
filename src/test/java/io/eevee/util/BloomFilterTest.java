@@ -14,7 +14,6 @@ public class BloomFilterTest {
 
     private BloomFilter<Integer> emptyBloomFilter;
     private BloomFilter<Integer> singleElementBloomFilter;
-    private BloomFilter<Integer> multiElementBloomFilter;
 
     @BeforeEach
     public void setup() {
