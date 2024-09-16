@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.IndexOutOfBoundsException;
 import java.lang.Integer;
+import java.nio.charset.Charset;
 import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
 
@@ -15,14 +16,14 @@ import org.junit.jupiter.api.Test;
  */
 public class MurmurTest {
 
+    // Known test results taken from https://github.com/apache/kafka/blob/trunk/streams/src/test/java/org/apache/kafka/streams/state/internals/Murmur3Test.java
     @Test
     public void testHashMethod() {
-        assertEquals(-965378730, Murmur.hash("".getBytes()));
-        assertEquals(-1848669458, Murmur.hash("1".getBytes()));
-        assertEquals(1666508496, Murmur.hash("1234".getBytes()));
-        assertEquals(1964441507, Murmur.hash("12345".getBytes()));
-        assertEquals(-808470058, Murmur.hash("123456".getBytes()));
-        assertEquals(-1383198686, Murmur.hash("1234567".getBytes()));
-        assertEquals(-80084596, Murmur.hash("A-fairly-large-string".getBytes()));
+        assertEquals(896581614, Murmur.hash("21".getBytes(), 123));
+        assertEquals(-328928243, Murmur.hash("foobar".getBytes(), 123));
+        assertEquals(-1479816207, Murmur.hash("a-little-bit-long-string".getBytes(), 123));
+        assertEquals(-153232333, Murmur.hash("a-little-bit-longer-string".getBytes(), 123));
+        assertEquals(13417721, Murmur.hash("lkjh234lh9fiuh90y23oiuhsafujhadof229phr9h19h89h8".getBytes(), 123));
+        assertEquals(461137560, Murmur.hash(new byte[]{'a', 'b', 'c'}, 123));
     }
 }

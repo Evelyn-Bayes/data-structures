@@ -23,6 +23,15 @@ public class BloomFilterTest {
         singleElementBloomFilter.add(0);
     }
 
+    /**
+     * Tests to write:
+     *   1. Coherence check which inserts "x" objects and validates we can find them
+     *   2. Check which inserts "x" objects with "y" known collisions and tests we see this reflected in the number of bits in our array
+     *   3. Check with "x" inserts our false positive rate is within the bounds we expect
+     *   4. Test we build the correct size based on our expected number of inserts and false positive rate
+     *   5. Test we select the correct number of hash functions
+     */
+
     @Test
     public void testMightContainMethod() {
         assertEquals(false, emptyBloomFilter.mayContain(0));

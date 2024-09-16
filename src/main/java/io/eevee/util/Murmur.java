@@ -44,7 +44,7 @@ public class Murmur {
     // Switch statement with fall through so that we add "remainingBytes" number of byte segments together
     //
     // No bitmasking with 0xff occurs so negative bytes are not turned into the comparitively larger positive int hashMaterials
-    // Also as we are using the bitwiseexclusive or the sign of our returned hashMaterial will depend on if we have an odd number of negative bytes in the array
+    // Also as we are using the bitwise exclusive or the sign of our returned hashMaterial will depend on if we have an odd number of negative bytes in the array
     private static int partialBlockToHashMaterial(byte[] data, int remainingBytes) {
         int hashMaterial = 0;
         switch (remainingBytes) {
